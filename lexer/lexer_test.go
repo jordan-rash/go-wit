@@ -1,0 +1,113 @@
+package lexer_test
+
+import (
+	"testing"
+
+	"github.com/jordan-rash/go-wit/lexer"
+	"github.com/jordan-rash/go-wit/token"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestOPNextToken(t *testing.T) {
+	input := "@<>{}():,=%-.+;*_"
+
+	l := lexer.NewLexer(input)
+
+	tests := []struct {
+		expectedType    token.TokenType
+		expectedLiteral string
+	}{
+		{token.OP_AT, "@"},
+		{token.OP_BRACKET_ANGLE_LEFT, "<"},
+		{token.OP_BRACKET_ANGLE_RIGHT, ">"},
+		{token.OP_BRACKET_CURLY_LEFT, "{"},
+		{token.OP_BRACKET_CURLY_RIGHT, "}"},
+		{token.OP_BRACKET_PAREN_LEFT, "("},
+		{token.OP_BRACKET_PAREN_RIGHT, ")"},
+		{token.OP_COLON, ":"},
+		{token.OP_COMMA, ","},
+		{token.OP_EQUAL, "="},
+		{token.OP_EXPLICIT_ID, "%"},
+		{token.OP_MINUS, "-"},
+		{token.OP_PERIOD, "."},
+		{token.OP_PLUS, "+"},
+		{token.OP_SEMICOLON, ";"},
+		{token.OP_STAR, "*"},
+		{token.OP_UNDERSCORE, "_"},
+		{token.END_OF_FILE, ""},
+	}
+
+	for _, tt := range tests {
+		nTok := l.NextToken()
+
+		assert.Equal(t, nTok.Type, tt.expectedType)
+		assert.Equal(t, nTok.Literal, tt.expectedLiteral)
+	}
+}
+
+func TestSimpleWorld(t *testing.T) {
+	input := `package example:host
+
+interface derp {
+  foo: func() -> u16
+}
+
+world host {
+  import print: func(msg: string)
+
+  export run: func()
+}
+`
+
+	l := lexer.NewLexer(input)
+
+	tests := []struct {
+		expectedType    token.TokenType
+		expectedLiteral string
+	}{
+		{token.KEYWORD_PACKAGE, "package"},
+		{token.IDENTIFIER, "example"},
+		{token.OP_COLON, ":"},
+		{token.IDENTIFIER, "host"},
+		{token.KEYWORD_INTERFACE, "interface"},
+		{token.IDENTIFIER, "derp"},
+		{token.OP_BRACKET_CURLY_LEFT, "{"},
+		{token.IDENTIFIER, "foo"},
+		{token.OP_COLON, ":"},
+		{token.KEYWORD_FUNC, "func"},
+		{token.OP_BRACKET_PAREN_LEFT, "("},
+		{token.OP_BRACKET_PAREN_RIGHT, ")"},
+		{token.OP_ARROW, "->"},
+		{token.KEYWORD_U16, "u16"},
+		{token.OP_BRACKET_CURLY_RIGHT, "}"},
+		{token.KEYWORD_WORLD, "world"},
+		{token.IDENTIFIER, "host"},
+		{token.OP_BRACKET_CURLY_LEFT, "{"},
+		{token.KEYWORD_IMPORT, "import"},
+		{token.IDENTIFIER, "print"},
+		{token.OP_COLON, ":"},
+		{token.KEYWORD_FUNC, "func"},
+		{token.OP_BRACKET_PAREN_LEFT, "("},
+		{token.IDENTIFIER, "msg"},
+		{token.OP_COLON, ":"},
+		{token.KEYWORD_STRING, "string"},
+		{token.OP_BRACKET_PAREN_RIGHT, ")"},
+		{token.KEYWORD_EXPORT, "export"},
+		{token.IDENTIFIER, "run"},
+		{token.OP_COLON, ":"},
+		{token.KEYWORD_FUNC, "func"},
+		{token.OP_BRACKET_PAREN_LEFT, "("},
+		{token.OP_BRACKET_PAREN_RIGHT, ")"},
+		{token.OP_BRACKET_CURLY_RIGHT, "}"},
+		{token.END_OF_FILE, ""},
+	}
+
+	for _, tt := range tests {
+		nTok := l.NextToken()
+
+		assert.Equal(t, tt.expectedType, nTok.Type)
+		assert.Equal(t, tt.expectedLiteral, nTok.Literal)
+
+	}
+
+}
