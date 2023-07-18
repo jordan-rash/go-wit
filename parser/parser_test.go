@@ -14,8 +14,8 @@ import (
 
 type tests []struct {
 	Input             string
-	expectedType      token.TokenType
-	expectedValueType token.TokenType
+	expectedType      any
+	expectedValueType any
 }
 
 var (
@@ -34,6 +34,10 @@ var (
 		{"type derp = u32", token.KEYWORD_TYPE, token.KEYWORD_U32},
 		{"type derp = u64", token.KEYWORD_TYPE, token.KEYWORD_U64},
 		{"type derp = foo", token.KEYWORD_TYPE, token.IDENTIFIER},
+		// {"type derp = result", token.KEYWORD_TYPE, token.KEYWORD_RESULT},
+		{"type derp = result<string>", token.KEYWORD_TYPE, nil},
+		{"type derp = result<char, errno>", token.KEYWORD_TYPE, token.IDENTIFIER},
+		{"type derp = result<_, errno>", token.KEYWORD_TYPE, token.IDENTIFIER},
 	}
 
 	listTests = tests{
@@ -124,11 +128,14 @@ func TestTypeShape(t *testing.T) {
 			tempType := p.parseTypeStatement()
 			assert.NoError(t, p.Errors())
 
-			x, ok := tempType.Value.(*ast.Identifier)
-			assert.True(t, ok)
+			switch tT := tempType.Value.(type) {
+			case *ast.Identifier:
+				assert.Equal(t, tt.expectedType, string(tempType.Token.Type))
+				assert.Equal(t, tt.expectedValueType, string(tT.Token.Type))
+			case *ast.Child:
+				t.Log(tT.Token.Type)
+			}
 
-			assert.Equal(t, tt.expectedType, tempType.Token.Type)
-			assert.Equal(t, tt.expectedValueType, x.Token.Type)
 		}
 	}
 }
@@ -145,7 +152,7 @@ func TestTypeListShape(t *testing.T) {
 			assert.True(t, ok)
 
 			assert.Equal(t, token.KEYWORD_LIST, string(tempType.Name.Token.Type))
-			assert.Equal(t, tt.expectedValueType, x.Token.Type)
+			assert.Equal(t, tt.expectedValueType, string(x.Token.Type))
 		}
 	}
 }
@@ -162,7 +169,38 @@ func TestTypeOptionShape(t *testing.T) {
 			assert.True(t, ok)
 
 			assert.Equal(t, token.KEYWORD_OPTION, string(tempType.Name.Token.Type))
-			assert.Equal(t, tt.expectedValueType, x.Token.Type)
+			assert.Equal(t, tt.expectedValueType, string(x.Token.Type))
+		}
+	}
+}
+
+func TestTypeResultShape(t *testing.T) {
+	tests := []struct {
+		input            string
+		expectedOkValue  any
+		expectedErrValue any
+	}{
+		{"result<string>", token.KEYWORD_STRING, nil},
+		{"result<char, errno>", token.KEYWORD_CHAR, token.IDENTIFIER},
+		{"result<_, errno>", nil, token.IDENTIFIER},
+	}
+
+	for _, tt := range tests {
+		p := New(lexer.NewLexer(tt.input))
+		for p.peekToken.Type != token.END_OF_FILE {
+			tempType := p.parseResultShape()
+			assert.NoError(t, p.Errors())
+
+			switch okv := tempType.OkValue.(type) {
+			case *ast.Identifier:
+				assert.Equal(t, tt.expectedOkValue, string(okv.Token.Type))
+			case *ast.Child:
+				assert.Equal(t, tt.expectedOkValue, string(okv.Token.Type))
+			case nil:
+				assert.Nil(t, okv)
+			}
+
+			assert.Equal(t, token.KEYWORD_RESULT, string(tempType.Name.Token.Type))
 		}
 	}
 }

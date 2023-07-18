@@ -77,3 +77,22 @@ type OptionShape struct {
 
 func (t *OptionShape) shapeNode()           {}
 func (t *OptionShape) TokenLiteral() string { return t.Token.Literal }
+
+type ResultShape struct {
+	Token    token.Token
+	Name     *Identifier
+	OkValue  Expression
+	ErrValue Expression
+}
+
+func (t *ResultShape) shapeNode()           {}
+func (t *ResultShape) TokenLiteral() string { return t.Token.Literal }
+
+type TupleShape struct {
+	Token token.Token
+	Name  *Identifier
+	Value Expression
+}
+
+func (t *TupleShape) shapeNode()           {}
+func (t *TupleShape) TokenLiteral() string { return t.Token.Literal }

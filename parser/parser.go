@@ -27,8 +27,13 @@ type Parser struct {
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{lexer: l}
 
-	p.nextToken()
-	p.nextToken()
+	if p.peekToken.Literal != token.END_OF_FILE {
+		p.nextToken()
+
+	}
+	if p.peekToken.Literal != token.END_OF_FILE {
+		p.nextToken()
+	}
 
 	return p
 }
