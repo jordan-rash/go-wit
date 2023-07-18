@@ -28,7 +28,8 @@ func (p *Parser) parseTypeStatement() *ast.TypeStatement {
 	case token.KEYWORD_STRING, token.KEYWORD_BOOL, token.KEYWORD_CHAR,
 		token.KEYWORD_FLOAT32, token.KEYWORD_FLOAT64,
 		token.KEYWORD_S8, token.KEYWORD_S16, token.KEYWORD_S32, token.KEYWORD_S64,
-		token.KEYWORD_U8, token.KEYWORD_U16, token.KEYWORD_U32, token.KEYWORD_U64:
+		token.KEYWORD_U8, token.KEYWORD_U16, token.KEYWORD_U32, token.KEYWORD_U64,
+		token.IDENTIFIER:
 
 		p.nextToken()
 		stmt.Value = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
@@ -71,7 +72,8 @@ func (p *Parser) parseOptionShape() *ast.OptionShape {
 	case token.KEYWORD_STRING, token.KEYWORD_BOOL, token.KEYWORD_CHAR,
 		token.KEYWORD_FLOAT32, token.KEYWORD_FLOAT64,
 		token.KEYWORD_S8, token.KEYWORD_S16, token.KEYWORD_S32, token.KEYWORD_S64,
-		token.KEYWORD_U8, token.KEYWORD_U16, token.KEYWORD_U32, token.KEYWORD_U64:
+		token.KEYWORD_U8, token.KEYWORD_U16, token.KEYWORD_U32, token.KEYWORD_U64,
+		token.IDENTIFIER:
 
 		p.nextToken()
 		os.Value = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
@@ -118,7 +120,8 @@ func (p *Parser) parseListShape() *ast.ListShape {
 	case token.KEYWORD_STRING, token.KEYWORD_BOOL, token.KEYWORD_CHAR,
 		token.KEYWORD_FLOAT32, token.KEYWORD_FLOAT64,
 		token.KEYWORD_S8, token.KEYWORD_S16, token.KEYWORD_S32, token.KEYWORD_S64,
-		token.KEYWORD_U8, token.KEYWORD_U16, token.KEYWORD_U32, token.KEYWORD_U64:
+		token.KEYWORD_U8, token.KEYWORD_U16, token.KEYWORD_U32, token.KEYWORD_U64,
+		token.IDENTIFIER:
 
 		p.nextToken()
 		ls.Value = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}

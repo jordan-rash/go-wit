@@ -5,6 +5,7 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/jordan-rash/go-wit/ast"
 	"github.com/jordan-rash/go-wit/lexer"
 	"github.com/jordan-rash/go-wit/token"
 
@@ -32,6 +33,7 @@ var (
 		{"type derp = u16", token.KEYWORD_TYPE, token.KEYWORD_U16},
 		{"type derp = u32", token.KEYWORD_TYPE, token.KEYWORD_U32},
 		{"type derp = u64", token.KEYWORD_TYPE, token.KEYWORD_U64},
+		{"type derp = foo", token.KEYWORD_TYPE, token.IDENTIFIER},
 	}
 
 	listTests = tests{
@@ -47,6 +49,7 @@ var (
 		{"list<u8>", token.KEYWORD_TYPE, token.KEYWORD_U8},
 		{"list<u16>", token.KEYWORD_TYPE, token.KEYWORD_U16},
 		{"list<u32>", token.KEYWORD_TYPE, token.KEYWORD_U32},
+		{"list<foo>", token.KEYWORD_TYPE, token.IDENTIFIER},
 	}
 
 	optionTests = tests{
@@ -63,6 +66,7 @@ var (
 		{"option<u16>", token.KEYWORD_TYPE, token.KEYWORD_U16},
 		{"option<u32>", token.KEYWORD_TYPE, token.KEYWORD_U32},
 		{"option<u64>", token.KEYWORD_TYPE, token.KEYWORD_U64},
+		{"option<foo>", token.KEYWORD_TYPE, token.IDENTIFIER},
 	}
 )
 
@@ -118,8 +122,13 @@ func TestTypeShape(t *testing.T) {
 
 		for p.peekToken.Type != token.END_OF_FILE {
 			tempType := p.parseTypeStatement()
+			assert.NoError(t, p.Errors())
+
+			x, ok := tempType.Value.(*ast.Identifier)
+			assert.True(t, ok)
+
 			assert.Equal(t, tt.expectedType, tempType.Token.Type)
-			assert.Equal(t, strings.ToLower(string(tt.expectedValueType)), tempType.Value.TokenLiteral())
+			assert.Equal(t, tt.expectedValueType, x.Token.Type)
 		}
 	}
 }
@@ -132,8 +141,11 @@ func TestTypeListShape(t *testing.T) {
 			tempType := p.parseListShape()
 			assert.NoError(t, p.Errors())
 
+			x, ok := tempType.Value.(*ast.Identifier)
+			assert.True(t, ok)
+
 			assert.Equal(t, token.KEYWORD_LIST, string(tempType.Name.Token.Type))
-			assert.Equal(t, strings.ToLower(string(tt.expectedValueType)), tempType.Value.TokenLiteral())
+			assert.Equal(t, tt.expectedValueType, x.Token.Type)
 		}
 	}
 }
@@ -146,8 +158,11 @@ func TestTypeOptionShape(t *testing.T) {
 			tempType := p.parseOptionShape()
 			assert.NoError(t, p.Errors())
 
+			x, ok := tempType.Value.(*ast.Identifier)
+			assert.True(t, ok)
+
 			assert.Equal(t, token.KEYWORD_OPTION, string(tempType.Name.Token.Type))
-			assert.Equal(t, strings.ToLower(string(tt.expectedValueType)), tempType.Value.TokenLiteral())
+			assert.Equal(t, tt.expectedValueType, x.Token.Type)
 		}
 	}
 }
