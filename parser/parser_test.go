@@ -72,9 +72,12 @@ func TestNestedInterfaceShapes(t *testing.T) {
 			if assert.True(t, ok) {
 				if assert.Len(t, tShape.Children, 1) {
 					for _, tC := range tShape.Children {
-						assert.NotNil(t, tC) // TODO: this is failing
-						// 	t.Log(tt.expectedNestedType, tC.TokenLiteral())
-						// 	assert.Equal(t, tt.expectedNestedType, tC.TokenLiteral())
+						assert.NotNil(t, tC)
+						tShape, ok := tC.(*ast.TypeStatement)
+						if assert.True(t, ok) {
+							t.Log(tt.expectedNestedType, tC.TokenLiteral())
+							assert.Equal(t, strings.ToLower(string(tt.expectedNestedType)), tShape.Value.TokenLiteral())
+						}
 					}
 				}
 			}
@@ -109,6 +112,7 @@ func TestTypeShape(t *testing.T) {
 
 		for p.curToken.Type != token.END_OF_FILE {
 			tempType := p.parseTypeStatement()
+
 			assert.Equal(t, tt.expectedType, tempType.Token.Type)
 			assert.Equal(t, strings.ToLower(string(tt.expectedValueType)), tempType.Value.TokenLiteral())
 		}

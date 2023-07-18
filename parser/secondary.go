@@ -22,14 +22,15 @@ func (p *Parser) parseTypeStatement() *ast.TypeStatement {
 		return nil
 	}
 
-	switch p.peekToken.Type {
+	p.nextToken()
+
+	switch p.curToken.Type {
 	case token.KEYWORD_STRING, token.KEYWORD_BOOL, token.KEYWORD_CHAR,
 		token.KEYWORD_FLOAT32, token.KEYWORD_FLOAT64,
 		token.KEYWORD_S8, token.KEYWORD_S16, token.KEYWORD_S32, token.KEYWORD_S64,
 		token.KEYWORD_U8, token.KEYWORD_U16, token.KEYWORD_U32, token.KEYWORD_U64:
 
-		stmt.Value = &ast.Identifier{Token: p.peekToken, Value: p.peekToken.Literal}
-		p.nextToken()
+		stmt.Value = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 	case token.KEYWORD_LIST:
 		// p.parseListShape()
 	case token.KEYWORD_OPTION:
@@ -43,6 +44,6 @@ func (p *Parser) parseTypeStatement() *ast.TypeStatement {
 		return nil
 	}
 
-	p.nextToken()
+	p.nextToken() // eat switch statement token
 	return stmt
 }

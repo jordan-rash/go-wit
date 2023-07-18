@@ -22,7 +22,9 @@ func (p *Parser) parseInterfaceShape() *ast.InterfaceShape {
 		return nil
 	}
 
-	switch p.peekToken.Type {
+	p.nextToken() // eat left curly
+
+	switch p.curToken.Type {
 	case token.OP_BRACKET_CURLY_RIGHT:
 		p.nextToken()
 	case token.KEYWORD_TYPE:
