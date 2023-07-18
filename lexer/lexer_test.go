@@ -50,6 +50,7 @@ func TestSimpleWorld(t *testing.T) {
 
 interface derp {
   foo: func() -> u16
+  bar: func() -> float32
 }
 
 world host {
@@ -79,6 +80,13 @@ world host {
 		{token.OP_BRACKET_PAREN_RIGHT, ")"},
 		{token.OP_ARROW, "->"},
 		{token.KEYWORD_U16, "u16"},
+		{token.IDENTIFIER, "bar"},
+		{token.OP_COLON, ":"},
+		{token.KEYWORD_FUNC, "func"},
+		{token.OP_BRACKET_PAREN_LEFT, "("},
+		{token.OP_BRACKET_PAREN_RIGHT, ")"},
+		{token.OP_ARROW, "->"},
+		{token.KEYWORD_FLOAT32, "float32"},
 		{token.OP_BRACKET_CURLY_RIGHT, "}"},
 		{token.KEYWORD_WORLD, "world"},
 		{token.IDENTIFIER, "host"},

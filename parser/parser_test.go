@@ -95,8 +95,8 @@ func TestTypeShape(t *testing.T) {
 		{"type derp = string", token.KEYWORD_TYPE, token.KEYWORD_STRING},
 		{"type derp = bool", token.KEYWORD_TYPE, token.KEYWORD_BOOL},
 		{"type derp = char", token.KEYWORD_TYPE, token.KEYWORD_CHAR},
-		//{"type derp = float32", token.KEYWORD_TYPE, token.KEYWORD_FLOAT32},
-		//{"type derp = float64", token.KEYWORD_TYPE, token.KEYWORD_FLOAT64},
+		{"type derp = float32", token.KEYWORD_TYPE, token.KEYWORD_FLOAT32},
+		{"type derp = float64", token.KEYWORD_TYPE, token.KEYWORD_FLOAT64},
 		{"type derp = s8", token.KEYWORD_TYPE, token.KEYWORD_S8},
 		{"type derp = s16", token.KEYWORD_TYPE, token.KEYWORD_S16},
 		{"type derp = s32", token.KEYWORD_TYPE, token.KEYWORD_S32},
@@ -111,9 +111,9 @@ func TestTypeShape(t *testing.T) {
 		p := New(lexer.NewLexer(tt.Input))
 
 		for p.peekToken.Type != token.END_OF_FILE {
-				tempType := p.parseTypeStatement()
-				assert.Equal(t, tt.expectedType, tempType.Token.Type)
-				assert.Equal(t, strings.ToLower(string(tt.expectedValueType)), tempType.Value.TokenLiteral())
+			tempType := p.parseTypeStatement()
+			assert.Equal(t, tt.expectedType, tempType.Token.Type)
+			assert.Equal(t, strings.ToLower(string(tt.expectedValueType)), tempType.Value.TokenLiteral())
 		}
 	}
 }

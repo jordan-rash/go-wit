@@ -22,7 +22,6 @@ func NewLexer(input string) *Lexer {
 	return l
 }
 
-// TODO: missing floats
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
@@ -109,6 +108,18 @@ func (l *Lexer) NextToken() token.Token {
 				case 64:
 					n := l.readNumber()
 					return token.Token{Type: token.KEYWORD_S64, Literal: string(lit) + n}
+				default:
+					return token.Token{Type: token.LookupIdentifier(lit), Literal: lit}
+				}
+			case "float":
+				num := l.peekNum()
+				switch num {
+				case 32:
+					n := l.readNumber()
+					return token.Token{Type: token.KEYWORD_FLOAT32, Literal: string(lit) + n}
+				case 64:
+					n := l.readNumber()
+					return token.Token{Type: token.KEYWORD_FLOAT64, Literal: string(lit) + n}
 				default:
 					return token.Token{Type: token.LookupIdentifier(lit), Literal: lit}
 				}
