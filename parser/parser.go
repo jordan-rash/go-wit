@@ -44,12 +44,12 @@ func (p *Parser) nextToken() {
 
 func (p *Parser) Parse() *ast.AST {
 	tree := new(ast.AST)
-	for p.curToken.Type != token.END_OF_FILE {
+
+	for p.peekToken.Type != token.END_OF_FILE {
 		stmt := p.parseShape()
 		if stmt != nil {
 			tree.Shapes = append(tree.Shapes, stmt)
 		}
-		p.nextToken()
 	}
 
 	return tree
@@ -63,13 +63,14 @@ func (p *Parser) parseShape() ast.Shape {
 		return p.parseWorldShape()
 	case token.KEYWORD_USE:
 		return p.parseUseShape()
-	default:
-		// TODO: log error
-		return nil
 	}
+
+	fmt.Println(p.Errors(), p.curToken.Type)
+
+	return nil
 }
 
-func (p *Parser) expectNextType(t token.TokenType) bool {
+func (p *Parser) expectNextToken(t token.TokenType) bool {
 	if p.peekToken.Type == t {
 		p.nextToken()
 		return true
