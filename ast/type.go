@@ -68,3 +68,12 @@ type ListShape struct {
 
 func (t *ListShape) shapeNode()           {}
 func (t *ListShape) TokenLiteral() string { return t.Token.Literal }
+
+type OptionShape struct {
+	Token token.Token
+	Name  *Identifier
+	Value Expression
+}
+
+func (t *OptionShape) shapeNode()           {}
+func (t *OptionShape) TokenLiteral() string { return t.Token.Literal }

@@ -65,8 +65,6 @@ func (p *Parser) parseShape() ast.Shape {
 		return p.parseUseShape()
 	}
 
-	fmt.Println(p.Errors(), p.curToken.Type)
-
 	return nil
 }
 
