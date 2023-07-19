@@ -72,6 +72,26 @@ var (
 		{"option<u64>", token.KEYWORD_TYPE, token.KEYWORD_U64},
 		{"option<foo>", token.KEYWORD_TYPE, token.IDENTIFIER},
 	}
+	resultTests = []struct {
+		input            string
+		expectedOkValue  any
+		expectedErrValue any
+	}{
+		{"result<string>", token.KEYWORD_STRING, nil},
+		{"result<char, errno>", token.KEYWORD_CHAR, token.IDENTIFIER},
+		{"result<_, u16>", nil, token.KEYWORD_U16},
+		{"result<list<string>, errno>", token.KEYWORD_LIST, token.IDENTIFIER},
+		{"result<_, option<string>>", nil, token.KEYWORD_OPTION},
+	}
+	tupleTests = []struct {
+		input          string
+		expectedsValue []any
+	}{
+		{"tuple<string>", []any{token.KEYWORD_STRING}},
+		{"tuple<char, errno>", []any{token.KEYWORD_CHAR, token.IDENTIFIER}},
+		{"tuple<list<string>>", []any{token.KEYWORD_LIST}},
+		{"tuple<list<string>, option<string>>", []any{token.KEYWORD_LIST, token.KEYWORD_OPTION}},
+	}
 )
 
 func TestRootShapes(t *testing.T) {
@@ -174,19 +194,7 @@ func TestTypeOptionShape(t *testing.T) {
 }
 
 func TestTypeResultShape(t *testing.T) {
-	tests := []struct {
-		input            string
-		expectedOkValue  any
-		expectedErrValue any
-	}{
-		{"result<string>", token.KEYWORD_STRING, nil},
-		{"result<char, errno>", token.KEYWORD_CHAR, token.IDENTIFIER},
-		{"result<_, u16>", nil, token.KEYWORD_U16},
-		{"result<list<string>, errno>", token.KEYWORD_LIST, token.IDENTIFIER},
-		{"result<_, option<string>>", nil, token.KEYWORD_OPTION},
-	}
-
-	for i, tt := range tests {
+	for i, tt := range resultTests {
 		p := New(lexer.NewLexer(tt.input))
 		for p.peekToken.Type != token.END_OF_FILE {
 			tempType := p.parseResultShape()
@@ -216,17 +224,7 @@ func TestTypeResultShape(t *testing.T) {
 }
 
 func TestTypeTupleShape(t *testing.T) {
-	tests := []struct {
-		input          string
-		expectedsValue []any
-	}{
-		{"tuple<string>", []any{token.KEYWORD_STRING}},
-		{"tuple<char, errno>", []any{token.KEYWORD_CHAR, token.IDENTIFIER}},
-		{"tuple<list<string>>", []any{token.KEYWORD_LIST}},
-		{"tuple<list<string>, option<string>>", []any{token.KEYWORD_LIST, token.KEYWORD_OPTION}},
-	}
-
-	for _, tt := range tests {
+	for _, tt := range tupleTests {
 		p := New(lexer.NewLexer(tt.input))
 		for p.peekToken.Type != token.END_OF_FILE {
 			tempType := p.parseTupleShape()
