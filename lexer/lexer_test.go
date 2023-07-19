@@ -49,6 +49,8 @@ func TestSimpleWorld(t *testing.T) {
 	input := `package example:host
 
 interface derp {
+  type derp = result<_, errno>
+
   foo: func() -> u16
   bar: func() -> float32
 }
@@ -73,6 +75,15 @@ world host {
 		{token.KEYWORD_INTERFACE, "interface"},
 		{token.IDENTIFIER, "derp"},
 		{token.OP_BRACKET_CURLY_LEFT, "{"},
+		{token.KEYWORD_TYPE, "type"},
+		{token.IDENTIFIER, "derp"},
+		{token.OP_EQUAL, "="},
+		{token.KEYWORD_RESULT, "result"},
+		{token.OP_BRACKET_ANGLE_LEFT, "<"},
+		{token.OP_UNDERSCORE, "_"},
+		{token.OP_COMMA, ","},
+		{token.IDENTIFIER, "errno"},
+		{token.OP_BRACKET_ANGLE_RIGHT, ">"},
 		{token.IDENTIFIER, "foo"},
 		{token.OP_COLON, ":"},
 		{token.KEYWORD_FUNC, "func"},

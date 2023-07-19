@@ -34,7 +34,7 @@ var (
 		{"type derp = u32", token.KEYWORD_TYPE, token.KEYWORD_U32},
 		{"type derp = u64", token.KEYWORD_TYPE, token.KEYWORD_U64},
 		{"type derp = foo", token.KEYWORD_TYPE, token.IDENTIFIER},
-		// {"type derp = result", token.KEYWORD_TYPE, token.KEYWORD_RESULT},
+		{"type derp = result", token.KEYWORD_TYPE, token.KEYWORD_RESULT},
 		{"type derp = result<string>", token.KEYWORD_TYPE, nil},
 		{"type derp = result<char, errno>", token.KEYWORD_TYPE, token.IDENTIFIER},
 		{"type derp = result<_, errno>", token.KEYWORD_TYPE, token.IDENTIFIER},
@@ -133,9 +133,8 @@ func TestTypeShape(t *testing.T) {
 				assert.Equal(t, tt.expectedType, string(tempType.Token.Type))
 				assert.Equal(t, tt.expectedValueType, string(tT.Token.Type))
 			case *ast.Child:
-				t.Log(tT.Token.Type)
+				assert.Equal(t, tt.expectedType, string(tempType.Token.Type))
 			}
-
 		}
 	}
 }
@@ -182,10 +181,12 @@ func TestTypeResultShape(t *testing.T) {
 	}{
 		{"result<string>", token.KEYWORD_STRING, nil},
 		{"result<char, errno>", token.KEYWORD_CHAR, token.IDENTIFIER},
-		{"result<_, errno>", nil, token.IDENTIFIER},
+		{"result<_, u16>", nil, token.KEYWORD_U16},
+		{"result<list<string>, errno>", token.KEYWORD_LIST, token.IDENTIFIER},
+		{"result<_, option<string>>", nil, token.KEYWORD_OPTION},
 	}
 
-	for _, tt := range tests {
+	for i, tt := range tests {
 		p := New(lexer.NewLexer(tt.input))
 		for p.peekToken.Type != token.END_OF_FILE {
 			tempType := p.parseResultShape()
@@ -193,11 +194,20 @@ func TestTypeResultShape(t *testing.T) {
 
 			switch okv := tempType.OkValue.(type) {
 			case *ast.Identifier:
-				assert.Equal(t, tt.expectedOkValue, string(okv.Token.Type))
+				assert.Equal(t, tt.expectedOkValue, string(okv.Token.Type), i)
 			case *ast.Child:
-				assert.Equal(t, tt.expectedOkValue, string(okv.Token.Type))
+				assert.Equal(t, tt.expectedOkValue, string(okv.Token.Type), i)
 			case nil:
 				assert.Nil(t, okv)
+			}
+
+			switch errv := tempType.ErrValue.(type) {
+			case *ast.Identifier:
+				assert.Equal(t, tt.expectedErrValue, string(errv.Token.Type), i)
+			case *ast.Child:
+				assert.Equal(t, tt.expectedErrValue, string(errv.Token.Type), i)
+			case nil:
+				assert.Nil(t, errv)
 			}
 
 			assert.Equal(t, token.KEYWORD_RESULT, string(tempType.Name.Token.Type))
