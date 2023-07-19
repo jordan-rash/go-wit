@@ -54,7 +54,12 @@ func (p *Parser) parseTypeStatement() *ast.TypeStatement {
 
 		stmt.Value = &ast.Child{Token: p.curToken, Value: p.parseResultShape()}
 	case token.KEYWORD_TUPLE:
-		// p.parseTupleShape()
+		if !p.expectNextToken(token.KEYWORD_TUPLE) {
+			p.errors = errors.Join(p.errors, fmt.Errorf("expected KEYWORD_TUPLE, got %s", p.peekToken.Type))
+			return nil
+		}
+
+		stmt.Value = &ast.Child{Token: p.curToken, Value: p.parseTupleShape()}
 	default:
 		// stmt.Value = &ast.Child{Token: token.ILLEGAL, Value: p.curToken.Literal}
 		p.errors = errors.Join(p.errors, fmt.Errorf("unexpected token: %s", p.peekToken.Type))
@@ -105,7 +110,12 @@ func (p *Parser) parseOptionShape() *ast.OptionShape {
 
 		os.Value = &ast.Child{Token: p.curToken, Value: p.parseResultShape()}
 	case token.KEYWORD_TUPLE:
-	// p.parseTupleShape()
+		if !p.expectNextToken(token.KEYWORD_TUPLE) {
+			p.errors = errors.Join(p.errors, fmt.Errorf("expected KEYWORD_TUPLE, got %s", p.peekToken.Type))
+			return nil
+		}
+
+		os.Value = &ast.Child{Token: p.curToken, Value: p.parseTupleShape()}
 	default:
 	}
 
@@ -157,9 +167,13 @@ func (p *Parser) parseListShape() *ast.ListShape {
 		}
 
 		ls.Value = &ast.Child{Token: p.curToken, Value: p.parseResultShape()}
-		// p.parseResultShape()
 	case token.KEYWORD_TUPLE:
-	// p.parseTupleShape()
+		if !p.expectNextToken(token.KEYWORD_TUPLE) {
+			p.errors = errors.Join(p.errors, fmt.Errorf("expected KEYWORD_TUPLE, got %s", p.peekToken.Type))
+			return nil
+		}
+
+		ls.Value = &ast.Child{Token: p.curToken, Value: p.parseTupleShape()}
 	default:
 	}
 
@@ -188,7 +202,7 @@ func (p *Parser) parseTupleShape() *ast.TupleShape {
 		token.IDENTIFIER:
 
 		p.nextToken()
-		ts.Value = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+		ts.Value = append(ts.Value, &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal})
 
 	case token.KEYWORD_LIST:
 		if !p.expectNextToken(token.KEYWORD_LIST) {
@@ -196,29 +210,81 @@ func (p *Parser) parseTupleShape() *ast.TupleShape {
 			return nil
 		}
 
-		ts.Value = &ast.Child{Token: p.curToken, Value: p.parseListShape()}
+		c := &ast.Child{Token: p.curToken}
+		c.Value = p.parseListShape()
+		ts.Value = append(ts.Value, c)
 	case token.KEYWORD_OPTION:
 		if !p.expectNextToken(token.KEYWORD_OPTION) {
 			p.errors = errors.Join(p.errors, fmt.Errorf("expected KEYWORD_OPTION, got %s", p.peekToken.Type))
 			return nil
 		}
 
-		ts.Value = &ast.Child{Token: p.curToken, Value: p.parseOptionShape()}
+		ts.Value = append(ts.Value, &ast.Child{Token: p.curToken, Value: p.parseOptionShape()})
 	case token.KEYWORD_RESULT:
 		if !p.expectNextToken(token.KEYWORD_RESULT) {
 			p.errors = errors.Join(p.errors, fmt.Errorf("expected KEYWORD_RESULT, got %s", p.peekToken.Type))
 			return nil
 		}
 
-		ts.Value = &ast.Child{Token: p.curToken, Value: p.parseResultShape()}
+		ts.Value = append(ts.Value, &ast.Child{Token: p.curToken, Value: p.parseResultShape()})
 	case token.KEYWORD_TUPLE:
 		if !p.expectNextToken(token.KEYWORD_TUPLE) {
 			p.errors = errors.Join(p.errors, fmt.Errorf("expected KEYWORD_TUPLE, got %s", p.peekToken.Type))
 			return nil
 		}
 
-		ts.Value = &ast.Child{Token: p.curToken, Value: p.parseTupleShape()}
-	default:
+		ts.Value = append(ts.Value, &ast.Child{Token: p.curToken, Value: p.parseTupleShape()})
+	}
+
+	for p.peekToken.Type == token.OP_COMMA {
+		if !p.expectNextToken(token.OP_COMMA) {
+			p.errors = errors.Join(p.errors, fmt.Errorf("expected COMMA, got %s", p.peekToken.Type))
+			return nil
+		}
+
+		switch p.peekToken.Type {
+		case token.KEYWORD_STRING, token.KEYWORD_BOOL, token.KEYWORD_CHAR,
+			token.KEYWORD_FLOAT32, token.KEYWORD_FLOAT64,
+			token.KEYWORD_S8, token.KEYWORD_S16, token.KEYWORD_S32, token.KEYWORD_S64,
+			token.KEYWORD_U8, token.KEYWORD_U16, token.KEYWORD_U32, token.KEYWORD_U64,
+			token.IDENTIFIER:
+
+			p.nextToken()
+			ts.Value = append(ts.Value, &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal})
+
+		case token.KEYWORD_LIST:
+			if !p.expectNextToken(token.KEYWORD_LIST) {
+				p.errors = errors.Join(p.errors, fmt.Errorf("expected KEYWORD_LIST, got %s", p.peekToken.Type))
+				return nil
+			}
+
+			ts.Value = append(ts.Value, &ast.Child{Token: p.curToken, Value: p.parseListShape()})
+		case token.KEYWORD_OPTION:
+			if !p.expectNextToken(token.KEYWORD_OPTION) {
+				p.errors = errors.Join(p.errors, fmt.Errorf("expected KEYWORD_OPTION, got %s", p.peekToken.Type))
+				return nil
+			}
+
+			c := &ast.Child{Token: p.curToken}
+			c.Value = p.parseOptionShape()
+			ts.Value = append(ts.Value, c)
+
+		case token.KEYWORD_RESULT:
+			if !p.expectNextToken(token.KEYWORD_RESULT) {
+				p.errors = errors.Join(p.errors, fmt.Errorf("expected KEYWORD_RESULT, got %s", p.peekToken.Type))
+				return nil
+			}
+
+			ts.Value = append(ts.Value, &ast.Child{Token: p.curToken, Value: p.parseResultShape()})
+		case token.KEYWORD_TUPLE:
+			if !p.expectNextToken(token.KEYWORD_TUPLE) {
+				p.errors = errors.Join(p.errors, fmt.Errorf("expected KEYWORD_TUPLE, got %s", p.peekToken.Type))
+				return nil
+			}
+
+			ts.Value = append(ts.Value, &ast.Child{Token: p.curToken, Value: p.parseTupleShape()})
+		}
+
 	}
 
 	if !p.expectNextToken(token.OP_BRACKET_ANGLE_RIGHT) {

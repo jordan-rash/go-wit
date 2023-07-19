@@ -214,3 +214,34 @@ func TestTypeResultShape(t *testing.T) {
 		}
 	}
 }
+
+func TestTypeTupleShape(t *testing.T) {
+	tests := []struct {
+		input          string
+		expectedsValue []any
+	}{
+		{"tuple<string>", []any{token.KEYWORD_STRING}},
+		{"tuple<char, errno>", []any{token.KEYWORD_CHAR, token.IDENTIFIER}},
+		{"tuple<list<string>>", []any{token.KEYWORD_LIST}},
+		{"tuple<list<string>, option<string>>", []any{token.KEYWORD_LIST, token.KEYWORD_OPTION}},
+	}
+
+	for _, tt := range tests {
+		p := New(lexer.NewLexer(tt.input))
+		for p.peekToken.Type != token.END_OF_FILE {
+			tempType := p.parseTupleShape()
+			assert.NoError(t, p.Errors())
+
+			for i, tv := range tempType.Value {
+				switch tV := tv.(type) {
+				case *ast.Identifier:
+					assert.Equal(t, tt.expectedsValue[i], string(tV.Token.Type))
+				case *ast.Child:
+					assert.Equal(t, tt.expectedsValue[i], string(tV.Token.Type))
+				}
+			}
+
+			assert.Equal(t, token.KEYWORD_TUPLE, string(tempType.Name.Token.Type))
+		}
+	}
+}

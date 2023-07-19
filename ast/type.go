@@ -91,7 +91,7 @@ func (t *ResultShape) TokenLiteral() string { return t.Token.Literal }
 type TupleShape struct {
 	Token token.Token
 	Name  *Identifier
-	Value Expression
+	Value []Expression
 }
 
 func (t *TupleShape) shapeNode()           {}
