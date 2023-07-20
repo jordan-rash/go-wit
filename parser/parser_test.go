@@ -54,6 +54,7 @@ var (
 		{"list<u16>", token.KEYWORD_TYPE, token.KEYWORD_U16},
 		{"list<u32>", token.KEYWORD_TYPE, token.KEYWORD_U32},
 		{"list<foo>", token.KEYWORD_TYPE, token.IDENTIFIER},
+		{"list<foo-bar>", token.KEYWORD_TYPE, token.IDENTIFIER},
 	}
 
 	optionTests = tests{
@@ -71,6 +72,7 @@ var (
 		{"option<u32>", token.KEYWORD_TYPE, token.KEYWORD_U32},
 		{"option<u64>", token.KEYWORD_TYPE, token.KEYWORD_U64},
 		{"option<foo>", token.KEYWORD_TYPE, token.IDENTIFIER},
+		{"option<foo-bar>", token.KEYWORD_TYPE, token.IDENTIFIER},
 	}
 	resultTests = []struct {
 		input            string
@@ -80,7 +82,7 @@ var (
 		{"result<string>", token.KEYWORD_STRING, nil},
 		{"result<char, errno>", token.KEYWORD_CHAR, token.IDENTIFIER},
 		{"result<_, u16>", nil, token.KEYWORD_U16},
-		{"result<list<string>, errno>", token.KEYWORD_LIST, token.IDENTIFIER},
+		{"result<list<string>, err-no>", token.KEYWORD_LIST, token.IDENTIFIER},
 		{"result<_, option<string>>", nil, token.KEYWORD_OPTION},
 	}
 	tupleTests = []struct {
