@@ -34,7 +34,7 @@ func TestOPNextToken(t *testing.T) {
 		{token.OP_SEMICOLON, ";"},
 		{token.OP_STAR, "*"},
 		{token.OP_UNDERSCORE, "_"},
-		{token.END_OF_FILE, ""},
+		{token.END_OF_FILE, "EOF"},
 	}
 
 	for _, tt := range tests {
@@ -118,7 +118,7 @@ world host {
 		{token.OP_BRACKET_PAREN_LEFT, "("},
 		{token.OP_BRACKET_PAREN_RIGHT, ")"},
 		{token.OP_BRACKET_CURLY_RIGHT, "}"},
-		{token.END_OF_FILE, ""},
+		{token.END_OF_FILE, "EOF"},
 	}
 
 	for _, tt := range tests {

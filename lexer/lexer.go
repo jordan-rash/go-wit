@@ -69,7 +69,7 @@ func (l *Lexer) NextToken() token.Token {
 	case '_':
 		tok = token.Token{Type: token.OP_UNDERSCORE, Literal: string(l.ch)}
 	case 0:
-		tok = token.Token{Type: token.END_OF_FILE, Literal: string("")}
+		tok = token.Token{Type: token.END_OF_FILE, Literal: string("EOF")}
 	default:
 		if unicode.IsLetter(rune(l.ch)) {
 			lit := l.readIdentifier()
