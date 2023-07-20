@@ -92,6 +92,14 @@ var (
 		{"tuple<list<string>>", []any{token.KEYWORD_LIST}},
 		{"tuple<list<string>, option<string>>", []any{token.KEYWORD_LIST, token.KEYWORD_OPTION}},
 	}
+	packageTests = []struct {
+		input   string
+		value   string
+		version string
+	}{
+		{"package wasi:derp", "wasi:derp", ""},
+		{"package wasi:derp@0.1.0", "wasi:derp", "0.1.0"},
+	}
 )
 
 func TestRootShapes(t *testing.T) {
@@ -240,6 +248,21 @@ func TestTypeTupleShape(t *testing.T) {
 			}
 
 			assert.Equal(t, token.KEYWORD_TUPLE, string(tempType.Name.Token.Type))
+		}
+	}
+}
+
+func TestTypePackageShape(t *testing.T) {
+	for _, tt := range packageTests {
+		p := New(lexer.NewLexer(tt.input))
+		for p.peekToken.Type != token.END_OF_FILE {
+			tempType := p.parsePackageShape()
+			assert.NoError(t, p.Errors())
+
+			assert.Equal(t, tt.value, tempType.Value)
+			assert.Equal(t, tt.version, tempType.Version)
+
+			assert.Equal(t, token.KEYWORD_PACKAGE, string(tempType.Name.Token.Type))
 		}
 	}
 }

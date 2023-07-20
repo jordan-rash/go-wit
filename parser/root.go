@@ -142,11 +142,8 @@ func (p *Parser) parsePackageShape() *ast.PackageShape {
 		return nil
 	}
 
-	if !p.expectNextToken(token.IDENTIFIER) {
-		return nil
-	}
-
-	pkg.Version = p.curToken.Literal
+	sv := p.parseSemVer()
+	pkg.Version = sv.String()
 
 	return pkg
 }

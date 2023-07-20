@@ -49,6 +49,16 @@ type UseShape struct {
 func (t *UseShape) shapeNode()           {}
 func (t *UseShape) TokenLiteral() string { return t.Token.Literal }
 
+type PackageShape struct {
+	Token   token.Token
+	Name    *Identifier
+	Value   string
+	Version string
+}
+
+func (t *PackageShape) shapeNode()           {}
+func (t *PackageShape) TokenLiteral() string { return t.Token.Literal }
+
 // Secondary shapes
 
 type TypeStatement struct {
