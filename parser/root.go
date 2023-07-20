@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"strings"
+
 	"github.com/jordan-rash/go-wit/ast"
 	"github.com/jordan-rash/go-wit/token"
 )
@@ -102,4 +104,49 @@ func (p *Parser) parseUseShape() *ast.UseShape {
 	}
 
 	return stmt
+}
+
+func (p *Parser) parsePackageShape() *ast.PackageShape {
+	pkg := new(ast.PackageShape)
+	pkg.Token = p.curToken
+	pkg.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	value := strings.Builder{}
+
+	if !p.expectNextToken(token.IDENTIFIER) {
+		return nil
+	}
+
+	value.WriteString(p.curToken.Literal)
+
+	if !p.expectNextToken(token.OP_COLON) {
+		return nil
+	}
+
+	value.WriteString(p.curToken.Literal)
+
+	if !p.expectNextToken(token.IDENTIFIER) {
+		return nil
+	}
+
+	value.WriteString(p.curToken.Literal)
+
+	pkg.Value = value.String()
+
+	if p.peekToken.Literal != token.OP_AT {
+		pkg.Version = ""
+		return pkg
+	}
+
+	if !p.expectNextToken(token.OP_AT) {
+		return nil
+	}
+
+	if !p.expectNextToken(token.IDENTIFIER) {
+		return nil
+	}
+
+	pkg.Version = p.curToken.Literal
+
+	return pkg
 }
