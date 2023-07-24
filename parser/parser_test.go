@@ -268,3 +268,29 @@ func TestTypePackageShape(t *testing.T) {
 		}
 	}
 }
+
+func TestParsePingPong(t *testing.T) {
+	input := `package jordan-rash:pingpong@0.1.0
+
+interface types {
+  type pong = string
+}
+
+interface pingpong {
+  use types.{pong}
+  ping: func() -> pong
+}
+
+world ping-pong {
+  export pingpong
+}
+`
+
+	t.SkipNow()
+
+	p := New(lexer.NewLexer(input))
+	ast := p.Parse()
+
+	assert.NoError(t, p.Errors())
+	assert.NotNil(t, ast)
+}

@@ -9,7 +9,7 @@ import (
 )
 
 func TestOPNextToken(t *testing.T) {
-	input := "@<>{}():,=%-.+;*_"
+	input := "@<>{}():,=%-.+;*_ "
 
 	l := lexer.NewLexer(input)
 
@@ -37,11 +37,11 @@ func TestOPNextToken(t *testing.T) {
 		{token.END_OF_FILE, "EOF"},
 	}
 
-	for _, tt := range tests {
+	for i, tt := range tests {
 		nTok := l.NextToken()
 
-		assert.Equal(t, nTok.Type, tt.expectedType)
-		assert.Equal(t, nTok.Literal, tt.expectedLiteral)
+		assert.Equal(t, tt.expectedType, nTok.Type, i)
+		assert.Equal(t, tt.expectedLiteral, nTok.Literal, i)
 	}
 }
 
@@ -121,12 +121,34 @@ world host {
 		{token.END_OF_FILE, "EOF"},
 	}
 
-	for _, tt := range tests {
+	for i, tt := range tests {
 		nTok := l.NextToken()
 
-		assert.Equal(t, tt.expectedType, nTok.Type)
-		assert.Equal(t, tt.expectedLiteral, nTok.Literal)
+		assert.Equal(t, tt.expectedType, nTok.Type, i)
+		assert.Equal(t, tt.expectedLiteral, nTok.Literal, i)
 
 	}
+}
 
+func TestKebabIdents(t *testing.T) {
+
+	tests := []struct {
+		expectedType    string
+		expectedLiteral string
+	}{
+		{token.INT, "7"},
+		{token.IDENTIFIER, "jordan-rash"},
+		{token.IDENTIFIER, "a-1-a-2"},
+		{token.IDENTIFIER, "a1-b2"},
+		{token.IDENTIFIER, "1-2"},
+	}
+
+	for i, tt := range tests {
+		l := lexer.NewLexer(tt.expectedLiteral)
+		nTok := l.NextToken()
+
+		assert.Equal(t, tt.expectedType, string(nTok.Type), i)
+		assert.Equal(t, tt.expectedLiteral, nTok.Literal, i)
+
+	}
 }
