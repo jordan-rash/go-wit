@@ -101,11 +101,6 @@ func (l *Lexer) NextToken() token.Token {
 				return token.Token{Type: token.KEYWORD_FLOAT64, Literal: "float" + l.readNumber()}
 			}
 		}
-		// case '1', '2', '3', '4', '5', '6', '7', '8', '9', '0':
-		// 	if l.peek() == 0 || l.peek() != '-' || unicode.IsSpace(rune(l.ch)) {
-		// 		n := l.readNumber()
-		// 		return token.Token{Type: token.INT, Literal: n}
-		// 	}
 	}
 
 	lit := l.readIdentifier()

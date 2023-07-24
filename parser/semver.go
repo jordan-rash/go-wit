@@ -41,6 +41,7 @@ func (p *Parser) parseSemVer() *semVer {
 	if !p.expectNextToken(token.INT) {
 		p.errors = errors.Join(p.errors, fmt.Errorf("failed to parse semver patch version: %v", p.peekToken))
 	}
+
 	sv.Patch = p.curToken
 
 	// TODO: got lazy, this needs to be completed for pre/build releases
@@ -50,6 +51,7 @@ func (p *Parser) parseSemVer() *semVer {
 	// default:
 	// 	return sv
 	// }
-	//
+
+	p.nextToken()
 	return sv
 }

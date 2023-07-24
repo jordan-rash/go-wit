@@ -61,6 +61,7 @@ func (p *Parser) Parse() *ast.AST {
 }
 
 func (p *Parser) parseShape() ast.Shape {
+
 	switch p.curToken.Type {
 	case token.KEYWORD_INTERFACE:
 		return p.parseInterfaceShape()
@@ -68,6 +69,8 @@ func (p *Parser) parseShape() ast.Shape {
 		return p.parseWorldShape()
 	case token.KEYWORD_USE:
 		return p.parseUseShape()
+	case token.KEYWORD_PACKAGE:
+		return p.parsePackageShape()
 	}
 
 	return nil
