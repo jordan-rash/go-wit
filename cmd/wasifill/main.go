@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
@@ -15,22 +17,6 @@ import (
 
 //go:embed "rpc.tmpl"
 var rpc string
-
-const witfile string = `package jordan-rash:pingpong@0.1.0
-
-interface types {
-  type pong = string
-}
-
-interface pingpong {
-  use types.{pong}
-  ping: func() -> pong
-}
-
-world ping-pong {
-  export pingpong
-}
-`
 
 type wasifill struct {
 	PackageNamespace string
@@ -80,111 +66,125 @@ type wfexports struct {
 }
 
 func main() {
-	p := parser.New(lexer.NewLexer(witfile))
-	t := p.Parse()
+	var file string
+	flag.StringVar(&file, "wit", "", "single wit file")
+	flag.Parse()
 
-	if p.Errors() != nil {
-		fmt.Printf("parser errors: %s", p.Errors().Error())
-		return
-	}
+	if file != "" {
+		witfile, err := ioutil.ReadFile(file)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 
-	wf := new(wasifill)
+		p := parser.New(lexer.NewLexer(string(witfile)))
+		t := p.Parse()
 
-	for _, s := range t.Shapes {
-		switch s.TokenLiteral() {
-		case "package":
-			tS, ok := s.(*ast.PackageShape)
-			if !ok {
-				fmt.Println("package error")
-				return
-			}
-
-			wf.PackageNamespace = strings.Split(tS.Value, ":")[0]
-			wf.PackageContract = strings.Split(tS.Value, ":")[1]
-			wf.Version = tS.Version
-		case "interface":
-			tS, ok := s.(*ast.InterfaceShape)
-			if !ok {
-				fmt.Println("interface error")
-				return
-			}
-			for _, c := range tS.Children {
-				switch c.TokenLiteral() {
-				case "type":
-					tC, ok := c.(*ast.TypeStatement)
-					if !ok {
-						fmt.Println("interface type error")
-						return
-					}
-
-					tT := wftype{
-						Interface: tS.Name.Value,
-						Name:      tC.Name.TokenLiteral(),
-						Type:      tC.Value.TokenLiteral(),
-					}
-
-					wf.Types = append(wf.Types, tT)
-				case "func":
-					tC, ok := c.(*ast.FuncShape)
-					if !ok {
-						fmt.Println("interface use error")
-						return
-					}
-
-					tF := wffunc{
-						Interface: tS.Name.Value,
-						Name:      tC.Name.TokenLiteral(),
-						Input:     "",
-						Output:    tC.Value.TokenLiteral(),
-					}
-
-					wf.Funcs = append(wf.Funcs, tF)
-				case "use":
-					_, ok := c.(*ast.UseShape)
-					if !ok {
-						fmt.Println("interface use error")
-						return
-					}
-					// fmt.Println("\t", tC.TokenLiteral(), tC.Value.TokenLiteral())
-				default:
-					fmt.Printf("interface child error: %T\n", c)
-					return
-				}
-			}
-
-		case "world":
-			tS, ok := s.(*ast.WorldShape)
-			if !ok {
-				fmt.Println("world error")
-				return
-			}
-			for _, c := range tS.Children {
-				switch c.TokenLiteral() {
-				case "export":
-					tC, ok := c.(*ast.ExportShape)
-					if !ok {
-						fmt.Println("interface use error")
-						return
-					}
-					tE := wfexports{
-						Type: "function",
-						Name: tC.Value.TokenLiteral(),
-					}
-					wf.Exports = append(wf.Exports, tE)
-				}
-			}
-
-		default:
-			fmt.Println("error: invalid root token")
+		if p.Errors() != nil {
+			fmt.Printf("parser errors: %s", p.Errors().Error())
 			return
 		}
 
-	}
+		wf := new(wasifill)
 
-	err := generateFiles(wf)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
+		for _, s := range t.Shapes {
+			switch s.TokenLiteral() {
+			case "package":
+				tS, ok := s.(*ast.PackageShape)
+				if !ok {
+					fmt.Println("package error")
+					return
+				}
+
+				wf.PackageNamespace = strings.Split(tS.Value, ":")[0]
+				wf.PackageContract = strings.Split(tS.Value, ":")[1]
+				wf.Version = tS.Version
+			case "interface":
+				tS, ok := s.(*ast.InterfaceShape)
+				if !ok {
+					fmt.Println("interface error")
+					return
+				}
+				for _, c := range tS.Children {
+					switch c.TokenLiteral() {
+					case "type":
+						tC, ok := c.(*ast.TypeStatement)
+						if !ok {
+							fmt.Println("interface type error")
+							return
+						}
+
+						tT := wftype{
+							Interface: tS.Name.Value,
+							Name:      tC.Name.TokenLiteral(),
+							Type:      tC.Value.TokenLiteral(),
+						}
+
+						wf.Types = append(wf.Types, tT)
+					case "func":
+						tC, ok := c.(*ast.FuncShape)
+						if !ok {
+							fmt.Println("interface use error")
+							return
+						}
+
+						tF := wffunc{
+							Interface: tS.Name.Value,
+							Name:      tC.Name.TokenLiteral(),
+							Input:     "",
+							Output:    tC.Value.TokenLiteral(),
+						}
+
+						wf.Funcs = append(wf.Funcs, tF)
+					case "use":
+						_, ok := c.(*ast.UseShape)
+						if !ok {
+							fmt.Println("interface use error")
+							return
+						}
+						// fmt.Println("\t", tC.TokenLiteral(), tC.Value.TokenLiteral())
+					default:
+						fmt.Printf("interface child error: %T\n", c)
+						return
+					}
+				}
+
+			case "world":
+				tS, ok := s.(*ast.WorldShape)
+				if !ok {
+					fmt.Println("world error")
+					return
+				}
+				for _, c := range tS.Children {
+					switch c.TokenLiteral() {
+					case "export":
+						tC, ok := c.(*ast.ExportShape)
+						if !ok {
+							fmt.Println("interface use error")
+							return
+						}
+						tE := wfexports{
+							Type: "function",
+							Name: tC.Value.TokenLiteral(),
+						}
+						wf.Exports = append(wf.Exports, tE)
+					}
+				}
+
+			default:
+				fmt.Println("error: invalid root token")
+				return
+			}
+
+		}
+
+		err = generateFiles(wf)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+	} else {
+		fmt.Println("error: must provider path to .wit")
+		flag.PrintDefaults()
 	}
 }
 
