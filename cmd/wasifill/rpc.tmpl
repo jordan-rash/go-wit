@@ -1,0 +1,74 @@
+package {{ .PackageContract }}
+
+import (
+	actor "github.com/wasmCloud/actor-tinygo"
+	msgpack "github.com/wasmcloud/tinygo-msgpack"
+)
+
+{{ range .Types }}
+type {{ .PubName }} {{ .Type }}
+{{ end }}
+
+{{- range $e := .Exports }}
+  {{- if (eq $e.Type "function") }}
+    {{- range $f := $.Funcs -}}
+      {{- if (eq $f.Interface $e.Name) }}
+type {{ $e.Name }} interface { 
+  {{ $f.PubName }}(ctx *actor.Context{{ $f.Input }}) {{ $f.PubOutput }}
+}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end }}
+
+{{ range .Types }}
+func (o *{{ .PubName }}) MEncode(encoder msgpack.Writer) error {
+	encoder.WriteString(string(*o))
+	return encoder.CheckError()
+}
+
+func MDecode{{ .PubName }}(d *msgpack.Decoder) ({{ .PubName }}, error) {
+	val, err := d.ReadString()
+	if err != nil {
+		return "", err
+	}
+
+	return {{ .PubName }}(val), nil
+}
+{{ end }}
+
+{{ range $e := .Exports }}
+type {{$.PubName}}Sender struct { transport actor.Transport }
+type {{$.PubName}}Receiver struct {}
+
+func NewProvider{{$.PubName}}() *{{$.PubName}}Sender {
+	transport := actor.ToProvider("{{$.PackageNamespace}}:{{$.PackageContract}}", "default")
+	return &{{$.PubName}}Sender{transport: transport}
+}
+
+func {{$.PubName}}Handler(a {{ .Name }}) actor.Handler {
+	return actor.NewHandler("{{$.PubName}}", &{{$.PubName}}Receiver{}, a)
+}
+
+func (r *{{$.PubName}}Receiver) Dispatch(ctx *actor.Context, svc interface{}, message *actor.Message) (*actor.Message, error) {
+	switch message.Method {
+  {{- range $f := $.Funcs }}
+  {{- if eq $e.Name .Interface }}
+    case "{{.PubName}}":
+      {
+        var sizer msgpack.Sizer
+        size_enc := &sizer
+        size_enc.WriteString(string(message.Arg))
+        buf := make([]byte, sizer.Len())
+        encoder := msgpack.NewEncoder(buf)
+        enc := &encoder
+        enc.WriteString(string(message.Arg))
+        return &actor.Message{Method: "{{$.PubName}}.{{.PubName}}", Arg: buf}, nil
+      }
+    {{- end }}
+    {{- end }}
+    default:
+      return nil, actor.NewRpcError("MethodNotHandled", "{{$.PubName}}."+message.Method)
+    }
+}
+{{ end }}

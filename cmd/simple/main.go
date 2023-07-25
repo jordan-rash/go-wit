@@ -52,6 +52,12 @@ func main() {
 					}
 					fmt.Println("\t", tC.Name.TokenLiteral(), tC.Value.TokenLiteral())
 
+				case "func":
+					tC, ok := c.(*ast.FuncShape)
+					if !ok {
+						// error
+					}
+					fmt.Println("\t", tC.TokenLiteral(), tC.Value.TokenLiteral())
 				case "use":
 					tC, ok := c.(*ast.UseShape)
 					if !ok {
@@ -94,7 +100,7 @@ func parseWit(done chan *ast.AST) {
 		panic(err)
 	}
 
-	fmt.Printf("Parsing the following file:\n\n```\n%s\n```\n\n", string(b))
+	fmt.Printf("Parsing the following file:\n\n```wit\n%s\n```\n\n", string(b))
 
 	p := parser.New(lexer.NewLexer(string(b)))
 	t := p.Parse()

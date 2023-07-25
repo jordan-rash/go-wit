@@ -24,6 +24,7 @@ type Parser struct {
 	errors error
 }
 
+// TODO: change input to string and create lexer
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{lexer: l}
 

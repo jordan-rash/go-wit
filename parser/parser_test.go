@@ -106,6 +106,14 @@ var (
 		{"package wasi:derp", "wasi:derp", ""},
 		{"package wasi:derp@0.1.0", "wasi:derp", "0.1.0"},
 	}
+	funcTests = []struct {
+		Input              string
+		name               string
+		expectedReturnType string
+	}{
+		{"derp: func() -> string", "derp", token.KEYWORD_STRING},
+		{"derp: func() -> foo", "derp", token.IDENTIFIER},
+	}
 )
 
 func TestParsePingPong(t *testing.T) {
@@ -170,6 +178,21 @@ func TestNestedInterfaceShapes(t *testing.T) {
 	assert.NoError(t, err)
 
 	for _, tt := range typeTests {
+		sb := strings.Builder{}
+		err = tmpl.Execute(&sb, tt)
+		assert.NoError(t, err)
+
+		p := New(lexer.NewLexer(sb.String()))
+
+		tree := p.Parse()
+		assert.NotNil(t, tree)
+		assert.NoError(t, p.Errors())
+
+		assert.NotNil(t, tree)
+		assert.Len(t, tree.Shapes, 1)
+	}
+
+	for _, tt := range funcTests {
 		sb := strings.Builder{}
 		err = tmpl.Execute(&sb, tt)
 		assert.NoError(t, err)
@@ -339,6 +362,27 @@ func TestExportShape(t *testing.T) {
 			case *ast.Child:
 				assert.Equal(t, tt.expectedType, string(tempType.Token.Type))
 			}
+		}
+	}
+}
+
+func TestFuncShape(t *testing.T) {
+	for i, tt := range funcTests {
+		p := Parser{lexer: lexer.NewLexer(tt.Input)}
+		p.nextToken()
+
+		for p.peekToken.Type != token.END_OF_FILE {
+			tempType := p.parseFuncLine()
+			assert.NoError(t, p.Errors())
+
+			assert.Equal(t, tt.name, tempType.Name.Value, i)
+			switch tT := tempType.Value.(type) {
+			case *ast.Identifier:
+				assert.Equal(t, tt.expectedReturnType, string(tT.Token.Type), i)
+			case *ast.Child:
+				assert.Equal(t, tt.expectedReturnType, string(tT.Token.Type), i)
+			}
+
 		}
 	}
 }

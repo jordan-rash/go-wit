@@ -168,7 +168,6 @@ func (p *Parser) parseExportStatement() *ast.ExportShape {
 
 func (p *Parser) parseFuncLine() *ast.FuncShape {
 	fs := new(ast.FuncShape)
-	fs.Token = p.curToken
 
 	if !p.expectNextToken(token.IDENTIFIER) {
 		return nil
@@ -182,6 +181,8 @@ func (p *Parser) parseFuncLine() *ast.FuncShape {
 	if !p.expectNextToken(token.KEYWORD_FUNC) {
 		return nil
 	}
+	fs.Token = p.curToken
+
 	if !p.expectNextToken(token.OP_BRACKET_PAREN_LEFT) {
 		return nil
 	}
