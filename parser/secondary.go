@@ -149,3 +149,50 @@ func (p *Parser) parseResultShape() *ast.ResultShape {
 
 	return rs
 }
+
+func (p *Parser) parseExportStatement() *ast.ExportShape {
+	es := new(ast.ExportShape)
+	es.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	es.Token = p.curToken
+
+	// TODO: this is lazy POC logic.  an export can be more than this
+	if !p.expectNextToken(token.IDENTIFIER) {
+		p.errors = errors.Join(p.errors, fmt.Errorf("expected BRACKET_ANGLE_LEFT, got %s", p.peekToken.Type))
+		return nil
+	}
+
+	es.Value = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	return es
+}
+
+func (p *Parser) parseFuncLine() *ast.FuncShape {
+	fs := new(ast.FuncShape)
+	fs.Token = p.curToken
+
+	if !p.expectNextToken(token.IDENTIFIER) {
+		return nil
+	}
+
+	fs.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	if !p.expectNextToken(token.OP_COLON) {
+		return nil
+	}
+	if !p.expectNextToken(token.KEYWORD_FUNC) {
+		return nil
+	}
+	if !p.expectNextToken(token.OP_BRACKET_PAREN_LEFT) {
+		return nil
+	}
+	if !p.expectNextToken(token.OP_BRACKET_PAREN_RIGHT) {
+		return nil
+	}
+	if !p.expectNextToken(token.OP_ARROW) {
+		return nil
+	}
+
+	fs.Value = p.makeExpression(p.peekToken)
+
+	return fs
+}

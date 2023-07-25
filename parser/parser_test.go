@@ -54,7 +54,7 @@ var (
 		{"list<u16>", token.KEYWORD_TYPE, token.KEYWORD_U16},
 		{"list<u32>", token.KEYWORD_TYPE, token.KEYWORD_U32},
 		{"list<foo>", token.KEYWORD_TYPE, token.IDENTIFIER},
-		// {"list<foo-bar>", token.KEYWORD_TYPE, token.IDENTIFIER},
+		{"list<foo-bar>", token.KEYWORD_TYPE, token.IDENTIFIER},
 	}
 
 	optionTests = tests{
@@ -72,7 +72,11 @@ var (
 		{"option<u32>", token.KEYWORD_TYPE, token.KEYWORD_U32},
 		{"option<u64>", token.KEYWORD_TYPE, token.KEYWORD_U64},
 		{"option<foo>", token.KEYWORD_TYPE, token.IDENTIFIER},
-		// {"option<foo-bar>", token.KEYWORD_TYPE, token.IDENTIFIER},
+		{"option<foo-bar>", token.KEYWORD_TYPE, token.IDENTIFIER},
+	}
+	exportTests = tests{
+		{"export derp", token.KEYWORD_EXPORT, token.IDENTIFIER},
+		{"export foo-bar", token.KEYWORD_EXPORT, token.IDENTIFIER},
 	}
 	resultTests = []struct {
 		input            string
@@ -103,6 +107,37 @@ var (
 		{"package wasi:derp@0.1.0", "wasi:derp", "0.1.0"},
 	}
 )
+
+func TestParsePingPong(t *testing.T) {
+	input := `package jordan-rash:pingpong@0.1.0
+
+interface types {
+  type pong = string
+}
+
+interface pingpong {
+  use types.{pong}
+  ping: func() -> pong
+}
+
+world ping-pong {
+  export pingpong
+}
+`
+
+	// t.SkipNow()
+
+	p := New(lexer.NewLexer(input))
+	ast := p.Parse()
+
+	assert.NoError(t, p.Errors())
+	assert.NotNil(t, ast)
+
+	tokens := []string{token.KEYWORD_PACKAGE, token.KEYWORD_INTERFACE, token.KEYWORD_INTERFACE, token.KEYWORD_WORLD}
+	for i, a := range ast.Shapes {
+		assert.Equal(t, strings.ToLower(tokens[i]), a.TokenLiteral())
+	}
+}
 
 func TestRootShapes(t *testing.T) {
 	tests := []struct {
@@ -135,6 +170,26 @@ func TestNestedInterfaceShapes(t *testing.T) {
 	assert.NoError(t, err)
 
 	for _, tt := range typeTests {
+		sb := strings.Builder{}
+		err = tmpl.Execute(&sb, tt)
+		assert.NoError(t, err)
+
+		p := New(lexer.NewLexer(sb.String()))
+
+		tree := p.Parse()
+		assert.NotNil(t, tree)
+		assert.NoError(t, p.Errors())
+
+		assert.NotNil(t, tree)
+		assert.Len(t, tree.Shapes, 1)
+	}
+}
+
+func TestNestedWorldShapes(t *testing.T) {
+	tmpl, err := template.New("test").Parse("world foo { {{ .Input }} }")
+	assert.NoError(t, err)
+
+	for _, tt := range exportTests {
 		sb := strings.Builder{}
 		err = tmpl.Execute(&sb, tt)
 		assert.NoError(t, err)
@@ -269,28 +324,21 @@ func TestTypePackageShape(t *testing.T) {
 	}
 }
 
-func TestParsePingPong(t *testing.T) {
-	input := `package jordan-rash:pingpong@0.1.0
+func TestExportShape(t *testing.T) {
+	for _, tt := range exportTests {
+		p := New(lexer.NewLexer(tt.Input))
 
-interface types {
-  type pong = string
-}
+		for p.peekToken.Type != token.END_OF_FILE {
+			tempType := p.parseExportStatement()
+			assert.NoError(t, p.Errors())
 
-interface pingpong {
-  use types.{pong}
-  ping: func() -> pong
-}
-
-world ping-pong {
-  export pingpong
-}
-`
-
-	t.SkipNow()
-
-	p := New(lexer.NewLexer(input))
-	ast := p.Parse()
-
-	assert.NoError(t, p.Errors())
-	assert.NotNil(t, ast)
+			switch tT := tempType.Value.(type) {
+			case *ast.Identifier:
+				assert.Equal(t, tt.expectedType, string(tempType.Token.Type))
+				assert.Equal(t, tt.expectedValueType, string(tT.Token.Type))
+			case *ast.Child:
+				assert.Equal(t, tt.expectedType, string(tempType.Token.Type))
+			}
+		}
+	}
 }

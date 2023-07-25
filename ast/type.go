@@ -32,9 +32,9 @@ func (t *InterfaceShape) shapeNode()           {}
 func (t *InterfaceShape) TokenLiteral() string { return t.Token.Literal }
 
 type WorldShape struct {
-	Token token.Token
-	Name  *Identifier
-	Value Expression
+	Token    token.Token
+	Name     *Identifier
+	Children []Shape
 }
 
 func (t *WorldShape) shapeNode()           {}
@@ -106,3 +106,21 @@ type TupleShape struct {
 
 func (t *TupleShape) shapeNode()           {}
 func (t *TupleShape) TokenLiteral() string { return t.Token.Literal }
+
+type ExportShape struct {
+	Token token.Token
+	Name  *Identifier
+	Value Expression
+}
+
+func (t *ExportShape) shapeNode()           {}
+func (t *ExportShape) TokenLiteral() string { return t.Token.Literal }
+
+type FuncShape struct {
+	Token token.Token
+	Name  *Identifier
+	Value Expression
+}
+
+func (t *FuncShape) shapeNode()           {}
+func (t *FuncShape) TokenLiteral() string { return t.Token.Literal }
