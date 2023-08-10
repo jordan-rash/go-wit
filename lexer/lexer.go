@@ -61,6 +61,8 @@ func (l *Lexer) NextToken() token.Token {
 		return token.Token{Type: token.OP_PLUS, Literal: string(l.readChar())}
 	case ';':
 		return token.Token{Type: token.OP_SEMICOLON, Literal: string(l.readChar())}
+	case '/':
+		return token.Token{Type: token.OP_SLASH, Literal: string(l.readChar())}
 	case '*':
 		x := l.readChar()
 		return token.Token{Type: token.OP_STAR, Literal: string(x)}
