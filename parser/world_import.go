@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/jordan-rash/go-wit/ast"
@@ -32,7 +31,6 @@ func (p *Parser) parseImportStatement() *ast.ImportShape {
 			return nil
 		}
 
-		fmt.Println("***", p.peekToken.Literal)
 		es.Value = p.parseInterfaceItems()
 	case token.IDENTIFIER:
 		sb := strings.Builder{}

@@ -176,7 +176,7 @@ type ResourceShape struct {
 	Value []Expression
 }
 
-func (t *ResourceShape) shapeNode()           {}
+func (t *ResourceShape) interfaceNode()       {}
 func (t *ResourceShape) Validate() bool       { return true }
 func (t *ResourceShape) TokenLiteral() string { return t.Token.Literal }
 
@@ -191,3 +191,14 @@ type NamedType struct {
 func (t *NamedType) expressionNode()      {}
 func (t *NamedType) Validate() bool       { return true }
 func (t *NamedType) TokenLiteral() string { return t.Token.Literal }
+
+type EnumShape struct {
+	Name  *Identifier
+	Token token.Token
+
+	Value []Expression
+}
+
+func (t *EnumShape) expressionNode()      {}
+func (t *EnumShape) Validate() bool       { return true }
+func (t *EnumShape) TokenLiteral() string { return t.Token.Literal }

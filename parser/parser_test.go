@@ -6,7 +6,6 @@ import (
 
 	"text/template"
 
-	// "github.com/jordan-rash/go-wit/ast"
 	"github.com/jordan-rash/go-wit/ast"
 	"github.com/jordan-rash/go-wit/lexer"
 	"github.com/jordan-rash/go-wit/token"
@@ -487,5 +486,43 @@ func TestResourceShape(t *testing.T) {
 		assert.Equal(t, "RESOURCE", string(tempType.Token.Type))
 
 		assert.Len(t, tempType.Value, 4)
+	}
+}
+
+func TestEnumShape(t *testing.T) {
+	enumTest := struct {
+		input         string
+		expectedName  string
+		expectedValue []string
+	}{
+		input: `enum color {
+    red,
+    green,
+    blue,
+    yellow,
+    other,
+   }`,
+		expectedName:  "color",
+		expectedValue: []string{"red", "green", "blue", "yellow", "other"},
+	}
+
+	p := New(lexer.NewLexer(enumTest.input))
+	t.Log("TESTING ->", enumTest.input)
+
+	for p.peekToken.Type != token.END_OF_FILE {
+		assert.True(t, p.expectNextToken(token.KEYWORD_ENUM))
+		tempType := p.parseEnumShape()
+		assert.NoError(t, p.Errors())
+
+		assert.Equal(t, enumTest.expectedName, tempType.Name.Token.Literal)
+		assert.Equal(t, token.KEYWORD_ENUM, string(tempType.Token.Type))
+
+		assert.Len(t, tempType.Value, 5)
+
+		// for i, v := range tempType.Value {
+		// 	ty, ok := v.(*ast.Ty)
+		// 	assert.True(t, ok)
+		// 	assert.Equal(t, enumTest.expectedValue[i], ty.Name)
+		// }
 	}
 }
