@@ -202,3 +202,14 @@ type EnumShape struct {
 func (t *EnumShape) expressionNode()      {}
 func (t *EnumShape) Validate() bool       { return true }
 func (t *EnumShape) TokenLiteral() string { return t.Token.Literal }
+
+type FlagShape struct {
+	Name  *Identifier
+	Token token.Token
+
+	Value []Expression
+}
+
+func (t *FlagShape) expressionNode()      {}
+func (t *FlagShape) Validate() bool       { return true }
+func (t *FlagShape) TokenLiteral() string { return t.Token.Literal }

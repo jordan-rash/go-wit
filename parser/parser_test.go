@@ -517,12 +517,49 @@ func TestEnumShape(t *testing.T) {
 		assert.Equal(t, enumTest.expectedName, tempType.Name.Token.Literal)
 		assert.Equal(t, token.KEYWORD_ENUM, string(tempType.Token.Type))
 
-		assert.Len(t, tempType.Value, 5)
+		assert.Len(t, tempType.Value, len(enumTest.expectedValue))
 
 		for i, v := range tempType.Value {
 			ty, ok := v.(*ast.Ty)
 			assert.True(t, ok)
 			assert.Equal(t, enumTest.expectedValue[i], ty.Value.TokenLiteral())
+		}
+	}
+}
+
+func TestFlagShape(t *testing.T) {
+	flagTest := struct {
+		input         string
+		expectedName  string
+		expectedValue []string
+	}{
+		input: `flags properties {
+    lego,
+    marvel-superhero,
+    supervillan,
+   }
+   `,
+		expectedName:  "properties",
+		expectedValue: []string{"lego", "marvel-superhero", "supervillan"},
+	}
+
+	p := New(lexer.NewLexer(flagTest.input))
+	t.Log("TESTING ->", flagTest.input)
+
+	for p.peekToken.Type != token.END_OF_FILE {
+		assert.True(t, p.expectNextToken(token.KEYWORD_FLAGS))
+		tempType := p.parseFlagShape()
+		assert.NoError(t, p.Errors())
+
+		assert.Equal(t, flagTest.expectedName, tempType.Name.Token.Literal)
+		assert.Equal(t, token.KEYWORD_FLAGS, string(tempType.Token.Type))
+
+		assert.Len(t, tempType.Value, len(flagTest.expectedValue))
+
+		for i, v := range tempType.Value {
+			ty, ok := v.(*ast.Ty)
+			assert.True(t, ok)
+			assert.Equal(t, flagTest.expectedValue[i], ty.Value.TokenLiteral())
 		}
 	}
 }
