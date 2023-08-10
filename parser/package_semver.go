@@ -52,6 +52,6 @@ func (p *Parser) parseSemVer() *semVer {
 	// 	return sv
 	// }
 
-	p.nextToken()
+	// p.nextToken()
 	return sv
 }

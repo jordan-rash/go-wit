@@ -20,6 +20,7 @@ const (
 	COMMENT_LINK          = "//"
 
 	// operators
+	OP_ARROW               = "->"
 	OP_AT                  = "@"
 	OP_BRACKET_ANGLE_LEFT  = "<"
 	OP_BRACKET_ANGLE_RIGHT = ">"
@@ -35,9 +36,9 @@ const (
 	OP_PERIOD              = "."
 	OP_PLUS                = "+"
 	OP_SEMICOLON           = ";"
+	OP_SLASH               = "/"
 	OP_STAR                = "*"
 	OP_UNDERSCORE          = "_"
-	OP_ARROW               = "->"
 
 	// keywords
 	KEYWORD_AS          = "AS"

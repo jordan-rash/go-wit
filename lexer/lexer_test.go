@@ -9,7 +9,7 @@ import (
 )
 
 func TestOPNextToken(t *testing.T) {
-	input := "@<>{}():,=%-.+;*_ "
+	input := "@/<>{}():,=%-.+;*_ "
 
 	l := lexer.NewLexer(input)
 
@@ -18,6 +18,7 @@ func TestOPNextToken(t *testing.T) {
 		expectedLiteral string
 	}{
 		{token.OP_AT, "@"},
+		{token.OP_SLASH, "/"},
 		{token.OP_BRACKET_ANGLE_LEFT, "<"},
 		{token.OP_BRACKET_ANGLE_RIGHT, ">"},
 		{token.OP_BRACKET_CURLY_LEFT, "{"},
