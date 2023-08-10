@@ -519,10 +519,10 @@ func TestEnumShape(t *testing.T) {
 
 		assert.Len(t, tempType.Value, 5)
 
-		// for i, v := range tempType.Value {
-		// 	ty, ok := v.(*ast.Ty)
-		// 	assert.True(t, ok)
-		// 	assert.Equal(t, enumTest.expectedValue[i], ty.Name)
-		// }
+		for i, v := range tempType.Value {
+			ty, ok := v.(*ast.Ty)
+			assert.True(t, ok)
+			assert.Equal(t, enumTest.expectedValue[i], ty.Value.TokenLiteral())
+		}
 	}
 }
