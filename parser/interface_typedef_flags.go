@@ -34,6 +34,7 @@ func (p *Parser) parseFlagShape() *ast.FlagShape {
 				if !p.expectNextToken(token.OP_COMMA) {
 					return nil
 				}
+
 				expectComma = false
 				break
 			}

@@ -563,3 +563,42 @@ func TestFlagShape(t *testing.T) {
 		}
 	}
 }
+
+func TestUnionShape(t *testing.T) {
+	unionTest := struct {
+		input         string
+		expectedName  string
+		expectedValue []token.Token
+	}{
+		input: `union configuration {
+     string,
+     list<string>,
+    }
+   `,
+		expectedName: "configuration",
+		expectedValue: []token.Token{
+			{Type: token.KEYWORD_STRING, Literal: "string"},
+			{Type: token.KEYWORD_LIST, Literal: "list"},
+		},
+	}
+
+	p := New(lexer.NewLexer(unionTest.input))
+	t.Log("TESTING ->", unionTest.input)
+
+	for p.peekToken.Type != token.END_OF_FILE {
+		assert.True(t, p.expectNextToken(token.KEYWORD_UNION))
+		tempType := p.parseUnionShape()
+		assert.NoError(t, p.Errors())
+
+		assert.Equal(t, unionTest.expectedName, tempType.Name.Token.Literal)
+		assert.Equal(t, token.KEYWORD_UNION, string(tempType.Token.Type))
+
+		assert.Len(t, tempType.Value, len(unionTest.expectedValue))
+
+		for i, v := range tempType.Value {
+			ty, ok := v.(*ast.Ty)
+			assert.True(t, ok)
+			assert.Equal(t, unionTest.expectedValue[i].Literal, ty.Value.TokenLiteral())
+		}
+	}
+}

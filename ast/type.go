@@ -45,7 +45,8 @@ type TypeDef struct {
 	Value Expression
 }
 
-func (t *TypeDef) interfaceNode()       {}
+func (t *TypeDef) expressionNode()      {}
+func (t *TypeDef) Validate() bool       { return true }
 func (t *TypeDef) TokenLiteral() string { return t.Token.Literal }
 
 type TypeShape struct {
@@ -124,7 +125,7 @@ type ImportShape struct {
 	Value Expression
 }
 
-func (t *ImportShape) shapeNode()           {}
+func (t *ImportShape) worldNode()           {}
 func (t *ImportShape) TokenLiteral() string { return t.Token.Literal }
 
 type IncludeShape struct {
@@ -133,7 +134,7 @@ type IncludeShape struct {
 	Value Expression
 }
 
-func (t *IncludeShape) shapeNode()           {}
+func (t *IncludeShape) worldNode()           {}
 func (t *IncludeShape) TokenLiteral() string { return t.Token.Literal }
 
 type FuncShape struct {
@@ -213,3 +214,34 @@ type FlagShape struct {
 func (t *FlagShape) expressionNode()      {}
 func (t *FlagShape) Validate() bool       { return true }
 func (t *FlagShape) TokenLiteral() string { return t.Token.Literal }
+
+type UnionShape struct {
+	Name  *Identifier
+	Token token.Token
+
+	Value []Expression
+}
+
+func (t *UnionShape) expressionNode()      {}
+func (t *UnionShape) Validate() bool       { return true }
+func (t *UnionShape) TokenLiteral() string { return t.Token.Literal }
+
+type RecordShape struct {
+	Token      token.Token
+	Identifier *Identifier
+	Value      []Expression
+}
+
+func (t *RecordShape) interfaceNode()       {}
+func (t *RecordShape) Validate() bool       { return true }
+func (t *RecordShape) TokenLiteral() string { return t.Token.Literal }
+
+type RecordField struct {
+	Token      token.Token
+	Identifier *Identifier
+	Ty         Expression
+}
+
+func (t *RecordField) expressionNode()      {}
+func (t *RecordField) Validate() bool       { return true }
+func (t *RecordField) TokenLiteral() string { return t.Token.Literal }
