@@ -236,6 +236,26 @@ func (t *RecordShape) interfaceNode()       {}
 func (t *RecordShape) Validate() bool       { return true }
 func (t *RecordShape) TokenLiteral() string { return t.Token.Literal }
 
+type VariantShape struct {
+	Token      token.Token
+	Identifier *Identifier
+	Value      []*VariantCase
+}
+
+func (t *VariantShape) expressionNode()      {}
+func (t *VariantShape) Validate() bool       { return true }
+func (t *VariantShape) TokenLiteral() string { return t.Token.Literal }
+
+type VariantCase struct {
+	Token      token.Token
+	Identifier *Identifier
+	Value      Expression
+}
+
+func (t *VariantCase) expressionNode()      {}
+func (t *VariantCase) Validate() bool       { return true }
+func (t *VariantCase) TokenLiteral() string { return t.Token.Literal }
+
 type RecordField struct {
 	Token      token.Token
 	Identifier *Identifier

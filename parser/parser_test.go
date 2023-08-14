@@ -602,3 +602,51 @@ func TestUnionShape(t *testing.T) {
 		}
 	}
 }
+
+func TestVariantShape(t *testing.T) {
+	variantTest := struct {
+		input         string
+		expectedName  string
+		expectedValue []struct {
+			Identifier string
+			Ty         *ast.Ty
+		}
+	}{
+		input: `variant filter {
+     all,
+     none,
+     some(list<string>),
+    }
+   `,
+		expectedName: "filter",
+		expectedValue: []struct {
+			Identifier string
+			Ty         *ast.Ty
+		}{
+			{"all", nil},
+			{"none", nil},
+			{"some", &ast.Ty{Token: token.Token{Type: token.KEYWORD_LIST, Literal: "list"}}},
+		},
+	}
+
+	p := New(lexer.NewLexer(variantTest.input))
+	t.Log("TESTING ->", variantTest.input)
+
+	for p.peekToken.Type != token.END_OF_FILE {
+		assert.True(t, p.expectNextToken(token.KEYWORD_VARIANT))
+		tempType := p.parseVariantShape()
+		assert.NoError(t, p.Errors())
+
+		assert.Equal(t, variantTest.expectedName, tempType.Identifier.Token.Literal)
+		assert.Equal(t, token.KEYWORD_VARIANT, string(tempType.Token.Type))
+
+		assert.Len(t, tempType.Value, len(variantTest.expectedValue))
+
+		for i, v := range tempType.Value {
+			t.Log(v)
+			if variantTest.expectedValue[i].Ty == nil {
+				assert.Nil(t, v.Value)
+			}
+		}
+	}
+}
