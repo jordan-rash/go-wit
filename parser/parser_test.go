@@ -643,7 +643,6 @@ func TestVariantShape(t *testing.T) {
 		assert.Len(t, tempType.Value, len(variantTest.expectedValue))
 
 		for i, v := range tempType.Value {
-			t.Log(v)
 			if variantTest.expectedValue[i].Ty == nil {
 				assert.Nil(t, v.Value)
 			}
